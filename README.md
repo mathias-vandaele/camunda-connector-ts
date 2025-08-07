@@ -1,15 +1,15 @@
 # Camunda Connector TypeScript
 
-Une bibliothèque TypeScript simple et élégante pour créer des endpoints HTTP qui s'intègrent avec Camunda BPM. Utilisez des décorateurs pour définir vos connecteurs et laissez la bibliothèque gérer automatiquement l'infrastructure du serveur HTTP.
+A simple and elegant TypeScript library for creating HTTP endpoints that integrate with Camunda BPM. Use TypeScript decorators to define your connectors and let the library automatically handle the HTTP server infrastructure.
 
-## Fonctionnalités
+## Features
 
-- 🎯 **API Simple**: Définissez vos connecteurs avec des décorateurs TypeScript
-- 🔄 **Endpoints automatiques**: Génération automatique des routes REST
-- 📦 **Type-safe**: Tirez parti du système de types TypeScript
-- ⚡ **Async/Await**: Support natif des opérations asynchrones
-- 🛠️ **Minimal**: Code boilerplate réduit au minimum
-- 🚀 **Express.js**: Construit sur Express.js pour de bonnes performances
+- 🎯 **Simple API**: Define connectors with TypeScript decorators
+- 🔄 **Automatic endpoints**: Auto-generated REST routes
+- 📦 **Type-safe**: Leverage TypeScript's type system
+- ⚡ **Async/Await**: Native support for asynchronous operations
+- 🛠️ **Minimal**: Reduced boilerplate code
+- 🚀 **Express.js**: Built on Express.js for great performance
 
 ## Installation
 
@@ -17,9 +17,9 @@ Une bibliothèque TypeScript simple et élégante pour créer des endpoints HTTP
 npm install camunda-connector-ts
 ```
 
-## Démarrage Rapide
+## Quick Start
 
-Voici un exemple complet montrant comment créer des connecteurs pour des opérations mathématiques :
+Here's a complete example showing how to create connectors for mathematical operations:
 
 ```typescript
 import { createConnectorServer, CamundaConnector } from 'camunda-connector-ts';
@@ -52,55 +52,55 @@ export class MathConnectors {
     }
 }
 
-// Démarrer le serveur sur le port 8080
+// Start the server on port 8080
 createConnectorServer({
     port: 8080
 });
 ```
 
-## Référence API
+## API Reference
 
-### `@CamundaConnector` Décorateur
+### `@CamundaConnector` Decorator
 
-Le décorateur principal pour définir les endpoints de connecteur.
+The main decorator for defining connector endpoints.
 
-**Paramètres:**
-- `name`: Le nom du connecteur (utilisé dans le chemin URL)
-- `operation`: Le nom de l'opération (utilisé dans le chemin URL)
+**Parameters:**
+- `name`: The connector name (used in the URL path)
+- `operation`: The operation name (used in the URL path)
 
-**Exigences de la méthode:**
-- Doit être `async` ou retourner une `Promise`
-- Doit avoir exactement 2 paramètres :
-  1. `id: number` - L'ID d'exécution du connecteur
-  2. `params: T` - Votre type d'entrée personnalisé
-- Doit retourner une `Promise<T>` où `T` est votre type de réponse
+**Method Requirements:**
+- Must be `async` or return a `Promise`
+- Must have exactly 2 parameters:
+  1. `id: number` - The connector execution ID
+  2. `params: T` - Your custom input type
+- Must return a `Promise<T>` where `T` is your response type
 
-**Endpoint généré:**
-Chaque connecteur génère un endpoint à `/csp/{name}/{operation}` qui accepte les requêtes POST.
+**Generated Endpoint:**
+Each connector generates an endpoint at `/csp/{name}/{operation}` that accepts POST requests.
 
-### `createConnectorServer` Fonction
+### `createConnectorServer` Function
 
-Crée et démarre le serveur HTTP Express.
+Creates and starts the Express HTTP server.
 
-**Paramètres:**
-- `port`: Le numéro de port sur lequel faire tourner le serveur
+**Parameters:**
+- `port`: The port number to run the server on
 
-## Comment ça marche
+## How It Works
 
-1. **Enregistrement des connecteurs**: Chaque méthode avec `@CamundaConnector` est automatiquement enregistrée dans le registre global
-2. **Génération des routes**: La fonction `createConnectorServer` crée les routes Express pour chaque connecteur
-3. **Gestion des requêtes**: Les requêtes JSON entrantes sont automatiquement parsées et passées à vos méthodes
-4. **Gestion des réponses**: Les résultats des fonctions sont sérialisés en réponses JSON
-5. **Gestion des erreurs**: Les erreurs sont automatiquement converties en réponses HTTP 500
+1. **Connector Registration**: Each method with `@CamundaConnector` is automatically registered in the global registry
+2. **Route Generation**: The `createConnectorServer` function creates Express routes for each connector
+3. **Request Handling**: Incoming JSON requests are automatically parsed and passed to your methods
+4. **Response Handling**: Function results are serialized to JSON responses
+5. **Error Handling**: Errors are automatically converted to HTTP 500 responses
 
-## Endpoints générés
+## Generated Endpoints
 
-Basé sur l'exemple ci-dessus, les endpoints suivants seraient créés :
+Based on the example above, the following endpoints would be created:
 
-- `POST /csp/math/add` - Opération d'addition
-- `POST /csp/math/sub` - Opération de soustraction
+- `POST /csp/math/add` - Addition operation
+- `POST /csp/math/sub` - Subtraction operation
 
-### Format de requête
+### Request Format
 
 ```json
 {
@@ -112,43 +112,43 @@ Basé sur l'exemple ci-dessus, les endpoints suivants seraient créés :
 }
 ```
 
-### Format de réponse
+### Response Format
 
-**Succès (200 OK):**
+**Success (200 OK):**
 ```json
 {
   "result": 15
 }
 ```
 
-**Erreur (400 Bad Request) - Payload invalide:**
+**Error (400 Bad Request) - Invalid payload:**
 ```json
 {
   "error": "Payload must contain 'id' and 'params'"
 }
 ```
 
-**Erreur (500 Internal Server Error):**
+**Error (500 Internal Server Error):**
 ```json
 {
-  "error": "Message d'erreur"
+  "error": "Error message"
 }
 ```
 
-## Gestion des erreurs
+## Error Handling
 
-La bibliothèque gère automatiquement :
-- Validation du payload JSON (présence de `id` et `params`)
-- Erreurs d'exécution des fonctions (converties en HTTP 500)
-- Parsing JSON invalide
+The library automatically handles:
+- JSON payload validation (presence of `id` and `params`)
+- Function execution errors (converted to HTTP 500)
+- Invalid JSON parsing
 
-Vos méthodes de connecteur peuvent lever des exceptions qui seront automatiquement capturées et retournées comme erreurs HTTP 500.
+Your connector methods can throw exceptions that will be automatically caught and returned as HTTP 500 errors.
 
-## Utilisation avancée
+## Advanced Usage
 
-### Types d'entrée/sortie personnalisés
+### Custom Input/Output Types
 
-Vous pouvez utiliser n'importe quels types TypeScript :
+You can use any TypeScript types:
 
 ```typescript
 interface DatabaseQuery {
@@ -167,10 +167,10 @@ export class DatabaseConnectors {
     
     @CamundaConnector({ name: "database", operation: "query" })
     public async queryDatabase(id: number, params: DatabaseQuery): Promise<DatabaseResult> {
-        // Votre logique de base de données ici
+        // Your database logic here
         const startTime = Date.now();
         
-        // Simulation d'une requête
+        // Query simulation
         const rows = await this.executeQuery(params);
         
         return {
@@ -181,27 +181,27 @@ export class DatabaseConnectors {
     }
     
     private async executeQuery(query: DatabaseQuery): Promise<any[]> {
-        // Implémentation de la requête
+        // Query implementation
         return [];
     }
 }
 ```
 
-### Multiples classes de connecteurs
+### Multiple Connector Classes
 
-Vous pouvez organiser vos connecteurs en plusieurs classes :
+You can organize your connectors in multiple classes:
 
 ```typescript
 export class EmailConnectors {
     
     @CamundaConnector({ name: "email", operation: "send" })
     public async sendEmail(id: number, params: EmailParams): Promise<EmailResult> {
-        // Logique d'envoi d'email
+        // Email sending logic
     }
     
     @CamundaConnector({ name: "email", operation: "validate" })
     public async validateEmail(id: number, params: EmailValidationParams): Promise<ValidationResult> {
-        // Logique de validation d'email
+        // Email validation logic
     }
 }
 
@@ -209,28 +209,28 @@ export class SlackConnectors {
     
     @CamundaConnector({ name: "slack", operation: "notify" })
     public async notifySlack(id: number, params: SlackParams): Promise<SlackResult> {
-        // Logique de notification Slack
+        // Slack notification logic
     }
 }
 ```
 
-### Configuration du serveur
+### Server Configuration
 
 ```typescript
 import { createConnectorServer } from 'camunda-connector-ts';
 
-// Instancier vos classes de connecteurs (nécessaire pour l'enregistrement des décorateurs)
+// Instantiate your connector classes (required for decorator registration)
 new MathConnectors();
 new EmailConnectors();
 new SlackConnectors();
 
-// Démarrer le serveur
+// Start the server
 createConnectorServer({
     port: process.env.PORT ? parseInt(process.env.PORT) : 8080
 });
 ```
 
-## Exemple complet
+## Complete Example
 
 ```typescript
 import { createConnectorServer, CamundaConnector } from 'camunda-connector-ts';
@@ -259,7 +259,7 @@ export class UserConnectors {
     public async getUser(id: number, params: UserRequest): Promise<User> {
         console.log(`[getUser] Processing request ${id} for user ${params.userId}`);
         
-        // Simulation d'un appel API ou base de données
+        // Simulate API call or database query
         const user: User = {
             id: params.userId,
             name: "John Doe",
@@ -281,7 +281,7 @@ export class UserConnectors {
     public async createUser(id: number, params: Omit<User, 'id'>): Promise<User> {
         console.log(`[createUser] Creating user for request ${id}`);
         
-        // Logique de création d'utilisateur
+        // User creation logic
         const newUser: User = {
             id: Math.random().toString(36).substring(7),
             ...params
@@ -291,10 +291,10 @@ export class UserConnectors {
     }
 }
 
-// Instancier la classe pour activer les décorateurs
+// Instantiate the class to activate decorators
 new UserConnectors();
 
-// Démarrer le serveur
+// Start the server
 createConnectorServer({
     port: 8080
 });
@@ -321,11 +321,11 @@ createConnectorServer({
                                     └─────────────────┘
 ```
 
-## Dépendances
+## Dependencies
 
-- [`express`](https://www.npmjs.com/package/express) - Framework web pour Node.js
+- [`express`](https://www.npmjs.com/package/express) - Web framework for Node.js
 
-## Scripts de développement
+## Development Scripts
 
 ```json
 {
@@ -337,18 +337,18 @@ createConnectorServer({
 }
 ```
 
-## Contribuer
+## Contributing
 
-Les contributions sont les bienvenues ! N'hésitez pas à soumettre une Pull Request.
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-## Licence
+## License
 
-Ce projet est sous licence MIT
+This project is licensed under the MIT License
 
 ## Changelog
 
 ### v1.0.0
-- Version initiale
-- Support des décorateurs de connecteur
-- Génération automatique du serveur HTTP
-- Support de la gestion d'erreurs
+- Initial release
+- Connector decorator support
+- Automatic HTTP server generation
+- Error handling support
