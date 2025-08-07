@@ -1,16 +1,41 @@
 {
   "name": "camunda-connector-ts",
   "version": "1.0.0",
-  "description": "",
+  "description": "A simple and elegant TypeScript library for creating HTTP endpoints that integrate with Camunda BPM using decorators",
+  
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
     "start": "node index.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "camunda",
+    "bpm",
+    "connector",
+    "typescript",
+    "decorator",
+    "express",
+    "workflow",
+    "automation",
+    "rest-api",
+    "http-server",
+    "microservice"
+  ],
+  "author": {
+    "name": "Mathias Vandaele",
+    "email": "mathias.vandaele@example.com",
+    "url": "https://github.com/mathias-vandaele"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/mathias-vandaele/camunda-connector-ts#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mathias-vandaele/camunda-connector-ts.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mathias-vandaele/camunda-connector-ts/issues"
+  },
   "type": "module",
   "devDependencies": {
     "@types/express": "^5.0.3",
