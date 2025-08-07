@@ -1,0 +1,20 @@
+{
+  "name": "math-connector",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/main.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "camunda-connector-ts": "file:../../"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2"
+  }
+}

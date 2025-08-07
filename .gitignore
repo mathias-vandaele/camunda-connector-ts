@@ -1,0 +1,52 @@
+# Node modules
+node_modules/
+
+# Fichiers de build TypeScript
+dist
+build
+out
+
+# Fichiers de déclaration TypeScript
+*.d.ts
+
+# Fichiers de carte de source générés par TypeScript
+*.map
+
+# Fichiers de log
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Fichiers du système d'exploitation
+.DS_Store
+Thumbs.db
+
+# IDEs et éditeurs (par exemple, Visual Studio Code)
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Fichiers de cache de dépendances
+.pnp/
+.pnp.js
+
+# Fichiers de configuration de test
+/coverage/
+
+# Dossiers temporaires ou spécifiques à un environnement
+/.env
+.env.*
+*.env
+
+# Configuration de TypeScript (si tu utilises tsc pour build)
+tsconfig.tsbuildinfo
+
+# Fichiers d'installation de l'éditeur
+*.sublime-project
+*.sublime-workspace
+
+# Npm package lock (si tu veux ignorer ce fichier dans Git, à ajuster selon ton flux de travail)
+package-lock.json
+yarn.lock
