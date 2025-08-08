@@ -1,6 +1,6 @@
 {
   "name": "camunda-connector-ts",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A simple and elegant TypeScript library for creating HTTP endpoints that integrate with Camunda BPM using decorators",
   
   "main": "dist/index.js",
