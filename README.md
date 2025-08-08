@@ -1,354 +1,331 @@
 # Camunda Connector TypeScript
 
-A simple and elegant TypeScript library for creating HTTP endpoints that integrate with Camunda BPM. Use TypeScript decorators to define your connectors and let the library automatically handle the HTTP server infrastructure.
+A TypeScript/Node.js library for building Camunda connectors with decorator-based routing and automatic request dispatching.
 
 ## Features
 
-- 🎯 **Simple API**: Define connectors with TypeScript decorators
-- 🔄 **Automatic endpoints**: Auto-generated REST routes
-- 📦 **Type-safe**: Leverage TypeScript's type system
-- ⚡ **Async/Await**: Native support for asynchronous operations
-- 🛠️ **Minimal**: Reduced boilerplate code
-- 🚀 **Express.js**: Built on Express.js for great performance
+- **Decorator-Based Connectors**: Use TypeScript decorators to define connectors with minimal boilerplate
+- **Automatic Request Dispatching**: Built-in Express.js server with intelligent routing
+- **Type Safety**: Full TypeScript support with strongly-typed interfaces
+- **Class-Based Organization**: Organize related connectors in classes
+- **Middleware Support**: Built-in middleware for operation routing
+- **Simple Setup**: Quick server creation with minimal configuration
 
 ## Installation
 
 ```bash
-npm install camunda-connector-ts
+npm install camunda-connector-ts express
+npm install -D @types/express typescript
 ```
 
 ## Quick Start
 
-Here's a complete example showing how to create connectors for mathematical operations:
+### Basic Example
 
 ```typescript
 import { createConnectorServer, CamundaConnector } from 'camunda-connector-ts';
 
-interface MyInput {
+// Define your input/output interfaces
+interface MathInput {
     a: number;
     b: number;
 }
 
-interface MyOutput {
+interface MathOutput {
     result: number;
 }
 
+// Create a connector class
 export class MathConnectors {
-
+    
     @CamundaConnector({ name: "math", operation: "add" })
-    public async add(id: number, params: MyInput): Promise<MyOutput> {
-        console.log(`[add] id: ${id}, params:`, params);
+    public async add(id: number, params: MathInput): Promise<MathOutput> {
+        console.log(`[Executing] add for task ${id}`);
         return {
             result: params.a + params.b
         };
     }
 
-    @CamundaConnector({ name: "math", operation: "sub" })
-    public async subtract(id: number, params: MyInput): Promise<MyOutput> {
-        console.log(`[sub] id: ${id}, params:`, params);
+    @CamundaConnector({ name: "math", operation: "subtract" })
+    public async subtract(id: number, params: MathInput): Promise<MathOutput> {
+        console.log(`[Executing] subtract for task ${id}`);
         return {
             result: params.a - params.b
         };
     }
 }
 
-// Start the server on port 8080
+// Start the server
 createConnectorServer({
     port: 8080
 });
 ```
 
-## API Reference
+## Usage
 
-### `@CamundaConnector` Decorator
+### Defining Connectors
 
-The main decorator for defining connector endpoints.
+Use the `@CamundaConnector` decorator to define connector methods:
 
-**Parameters:**
-- `name`: The connector name (used in the URL path)
-- `operation`: The operation name (used in the URL path)
+```typescript
+@CamundaConnector({ name: "connector_name", operation: "operation_name" })
+public async handlerMethod(id: number, params: InputType): Promise<OutputType> {
+    // Your connector logic here
+    return result;
+}
+```
 
-**Method Requirements:**
-- Must be `async` or return a `Promise`
-- Must have exactly 2 parameters:
-  1. `id: number` - The connector execution ID
-  2. `params: T` - Your custom input type
-- Must return a `Promise<T>` where `T` is your response type
+**Requirements:**
+- Methods must be `async` and return a `Promise`
+- Must take exactly 2 parameters: `id: number` and `params: any` (or your specific type)
+- Must be public methods in a class
+- TypeScript experimental decorators must be enabled
 
-**Generated Endpoint:**
-Each connector generates an endpoint at `/csp/{name}/{operation}` that accepts POST requests.
+### TypeScript Configuration
 
-### `createConnectorServer` Function
-
-Creates and starts the Express HTTP server.
-
-**Parameters:**
-- `port`: The port number to run the server on
-
-## How It Works
-
-1. **Connector Registration**: Each method with `@CamundaConnector` is automatically registered in the global registry
-2. **Route Generation**: The `createConnectorServer` function creates Express routes for each connector
-3. **Request Handling**: Incoming JSON requests are automatically parsed and passed to your methods
-4. **Response Handling**: Function results are serialized to JSON responses
-5. **Error Handling**: Errors are automatically converted to HTTP 500 responses
-
-## Generated Endpoints
-
-Based on the example above, the following endpoints would be created:
-
-- `POST /csp/math/add` - Addition operation
-- `POST /csp/math/sub` - Subtraction operation
-
-### Request Format
+Ensure your `tsconfig.json` has experimental decorators enabled:
 
 ```json
 {
-  "id": 12345,
-  "params": {
-    "a": 10,
-    "b": 5
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "target": "ES2020",
+    "module": "commonjs",
+    "strict": true
   }
+}
+```
+
+### Starting the Server
+
+Use `createConnectorServer()` to start the Express.js server:
+
+```typescript
+createConnectorServer({
+    port: 8080
+});
+```
+
+The server will automatically:
+- Register all decorated connector methods
+- Set up Express.js with JSON parsing
+- Create routes for each connector
+- Handle request dispatching and error responses
+
+### Request Format
+
+Connectors expect HTTP POST requests to `/csp/{connector_name}` with JSON payload:
+
+```json
+{
+    "id": 12345,
+    "params": {
+        "operation": "operation_name",
+        "input": {
+            // Your connector-specific input data
+        }
+    }
 }
 ```
 
 ### Response Format
 
-**Success (200 OK):**
+Successful responses return JSON with your connector's output data:
+
 ```json
 {
-  "result": 15
+    "result": 42
 }
 ```
 
-**Error (400 Bad Request) - Invalid payload:**
-```json
-{
-  "error": "Payload must contain 'id' and 'params'"
+Error responses return appropriate HTTP status codes:
+- **400 Bad Request**: Missing `id` or `params` in payload
+- **404 Not Found**: Unknown connector or operation
+- **500 Internal Server Error**: Handler method threw an error
+
+## How It Works
+
+### Decorator Registration
+
+The `@CamundaConnector` decorator:
+
+1. **Registers Handlers**: Adds connector metadata to a global registry
+2. **Creates Middleware**: Generates Express middleware for operation routing
+3. **Builds Paths**: Constructs REST endpoints (`/csp/{name}`)
+
+### Request Flow
+
+1. HTTP POST request arrives at `/csp/{connector_name}`
+2. Middleware checks the `operation` field in the request body
+3. If operation matches, the request continues to the handler
+4. If operation doesn't match, Express tries the next route
+5. Handler method is called with `id` and `params.input`
+6. Response is automatically serialized and returned
+
+### Registry System
+
+The connector registry stores:
+
+```typescript
+interface ConnectorRecipe {
+    name: string;           // Connector name
+    operation: string;      // Operation identifier
+    handler: Function;      // Your decorated method
+    middleware: Function;   // Generated routing middleware
+    fullPath: string;       // Full Express route path
 }
 ```
-
-**Error (500 Internal Server Error):**
-```json
-{
-  "error": "Error message"
-}
-```
-
-## Error Handling
-
-The library automatically handles:
-- JSON payload validation (presence of `id` and `params`)
-- Function execution errors (converted to HTTP 500)
-- Invalid JSON parsing
-
-Your connector methods can throw exceptions that will be automatically caught and returned as HTTP 500 errors.
 
 ## Advanced Usage
 
+### Multiple Connectors
+
+Organize related operations in classes:
+
+```typescript
+export class StringConnectors {
+    
+    @CamundaConnector({ name: "string", operation: "uppercase" })
+    public async toUpperCase(id: number, params: { text: string }): Promise<{ result: string }> {
+        return { result: params.text.toUpperCase() };
+    }
+    
+    @CamundaConnector({ name: "string", operation: "reverse" })
+    public async reverse(id: number, params: { text: string }): Promise<{ result: string }> {
+        return { result: params.text.split('').reverse().join('') };
+    }
+}
+
+export class MathConnectors {
+    
+    @CamundaConnector({ name: "math", operation: "power" })
+    public async power(id: number, params: { base: number, exponent: number }): Promise<{ result: number }> {
+        return { result: Math.pow(params.base, params.exponent) };
+    }
+}
+```
+
 ### Custom Input/Output Types
 
-You can use any TypeScript types:
+Define strongly-typed interfaces for better development experience:
 
 ```typescript
-interface DatabaseQuery {
-    table: string;
-    conditions: string[];
-    limit?: number;
+interface EmailInput {
+    to: string[];
+    subject: string;
+    body: string;
+    attachments?: string[];
 }
 
-interface DatabaseResult {
-    rows: any[];
-    count: number;
-    executionTime: number;
+interface EmailOutput {
+    messageId: string;
+    status: 'sent' | 'failed';
+    timestamp: Date;
 }
 
-export class DatabaseConnectors {
-    
-    @CamundaConnector({ name: "database", operation: "query" })
-    public async queryDatabase(id: number, params: DatabaseQuery): Promise<DatabaseResult> {
-        // Your database logic here
-        const startTime = Date.now();
-        
-        // Query simulation
-        const rows = await this.executeQuery(params);
-        
-        return {
-            rows,
-            count: rows.length,
-            executionTime: Date.now() - startTime
-        };
-    }
-    
-    private async executeQuery(query: DatabaseQuery): Promise<any[]> {
-        // Query implementation
-        return [];
-    }
-}
-```
-
-### Multiple Connector Classes
-
-You can organize your connectors in multiple classes:
-
-```typescript
-export class EmailConnectors {
+export class EmailConnector {
     
     @CamundaConnector({ name: "email", operation: "send" })
-    public async sendEmail(id: number, params: EmailParams): Promise<EmailResult> {
-        // Email sending logic
-    }
-    
-    @CamundaConnector({ name: "email", operation: "validate" })
-    public async validateEmail(id: number, params: EmailValidationParams): Promise<ValidationResult> {
-        // Email validation logic
-    }
-}
-
-export class SlackConnectors {
-    
-    @CamundaConnector({ name: "slack", operation: "notify" })
-    public async notifySlack(id: number, params: SlackParams): Promise<SlackResult> {
-        // Slack notification logic
-    }
-}
-```
-
-### Server Configuration
-
-```typescript
-import { createConnectorServer } from 'camunda-connector-ts';
-
-// Instantiate your connector classes (required for decorator registration)
-new MathConnectors();
-new EmailConnectors();
-new SlackConnectors();
-
-// Start the server
-createConnectorServer({
-    port: process.env.PORT ? parseInt(process.env.PORT) : 8080
-});
-```
-
-## Complete Example
-
-```typescript
-import { createConnectorServer, CamundaConnector } from 'camunda-connector-ts';
-
-interface UserRequest {
-    userId: string;
-    includeProfile?: boolean;
-}
-
-interface User {
-    id: string;
-    name: string;
-    email: string;
-    profile?: UserProfile;
-}
-
-interface UserProfile {
-    bio: string;
-    location: string;
-    joinDate: Date;
-}
-
-export class UserConnectors {
-    
-    @CamundaConnector({ name: "user", operation: "get" })
-    public async getUser(id: number, params: UserRequest): Promise<User> {
-        console.log(`[getUser] Processing request ${id} for user ${params.userId}`);
-        
-        // Simulate API call or database query
-        const user: User = {
-            id: params.userId,
-            name: "John Doe",
-            email: "john.doe@example.com"
+    public async sendEmail(id: number, params: EmailInput): Promise<EmailOutput> {
+        // Email sending logic here
+        return {
+            messageId: `msg_${Date.now()}`,
+            status: 'sent',
+            timestamp: new Date()
         };
-        
-        if (params.includeProfile) {
-            user.profile = {
-                bio: "Software developer",
-                location: "Paris, France",
-                joinDate: new Date('2023-01-15')
-            };
+    }
+}
+```
+
+### Error Handling
+
+Handle errors in your connector methods:
+
+```typescript
+@CamundaConnector({ name: "api", operation: "fetch" })
+public async fetchData(id: number, params: { url: string }): Promise<any> {
+    try {
+        const response = await fetch(params.url);
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
-        
-        return user;
-    }
-    
-    @CamundaConnector({ name: "user", operation: "create" })
-    public async createUser(id: number, params: Omit<User, 'id'>): Promise<User> {
-        console.log(`[createUser] Creating user for request ${id}`);
-        
-        // User creation logic
-        const newUser: User = {
-            id: Math.random().toString(36).substring(7),
-            ...params
-        };
-        
-        return newUser;
+        return await response.json();
+    } catch (error) {
+        // Error will be automatically converted to 500 response
+        throw new Error(`Failed to fetch data: ${error.message}`);
     }
 }
+```
 
-// Instantiate the class to activate decorators
-new UserConnectors();
+## Server Configuration
 
-// Start the server
+The server configuration accepts additional options:
+
+```typescript
 createConnectorServer({
-    port: 8080
+    port: 8080,
+    // Additional Express configuration can be added here
 });
 ```
 
-## Architecture
+## Development
 
+### Running in Development
+
+```bash
+# Install dependencies
+npm install
+
+# Compile TypeScript
+npx tsc
+
+# Run the server
+node dist/index.js
 ```
-┌─────────────────┐    HTTP POST     ┌─────────────────┐
-│   Camunda BPM   │ ───────────────► │  Connector API  │
-│                 │                  │                 │
-└─────────────────┘                  └─────────────────┘
-                                              │
-                                              ▼
-                                    ┌─────────────────┐
-                                    │ Express Router  │
-                                    │                 │
-                                    └─────────────────┘
-                                              │
-                                              ▼
-                                    ┌─────────────────┐
-                                    │ Method Handler  │
-                                    │ (@Decorator)    │
-                                    └─────────────────┘
+
+### Testing Connectors
+
+Test your connectors with curl:
+
+```bash
+curl -X POST http://localhost:8080/csp/math \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": 123,
+    "params": {
+      "operation": "add",
+      "input": {
+        "a": 5,
+        "b": 3
+      }
+    }
+  }'
 ```
 
 ## Dependencies
 
-- [`express`](https://www.npmjs.com/package/express) - Web framework for Node.js
+This library uses the following key dependencies:
 
-## Development Scripts
+- **Express.js**: For HTTP server and routing
+- **TypeScript**: For type safety and decorators
 
-```json
-{
-  "scripts": {
-    "dev": "ts-node src/index.ts",
-    "build": "tsc",
-    "start": "node dist/index.js"
-  }
-}
-```
+## Comparison with Rust Version
 
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
+| Feature | TypeScript | Rust |
+|---------|------------|------|
+| Syntax | Decorators | Procedural Macros |
+| Runtime | Node.js | Native Binary |
+| Type Safety | Compile-time + Runtime | Compile-time |
+| Server | Express.js | Axum |
+| Registration | Runtime Registry | Compile-time Inventory |
+| Performance | Good | Excellent |
+| Memory Usage | Higher | Lower |
 
 ## License
 
-This project is licensed under the MIT License
+[Add your license information here]
 
-## Changelog
+## Contributing
 
-### v1.0.0
-- Initial release
-- Connector decorator support
-- Automatic HTTP server generation
-- Error handling support
+[Add contribution guidelines here]
